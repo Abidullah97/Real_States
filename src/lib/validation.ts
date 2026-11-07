@@ -1,0 +1,27 @@
+import {z} from "zod";
+
+export const registrationSchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),password:z.string().min(12).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/)});
+export const inquirySchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),phone:z.string().trim().max(30).optional(),message:z.string().trim().min(10).max(2000),propertySlug:z.string().max(100).optional(),website:z.string().optional()});
+export const submissionSchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),phone:z.string().trim().min(7).max(30),city:z.string().trim().min(2).max(100),address:z.string().trim().min(4).max(300),propertyType:z.string().trim().min(2).max(60),listingType:z.enum(["SALE","RENT"]),bedrooms:z.coerce.number().int().min(0).max(30),area:z.coerce.number().positive().max(1_000_000),areaUnit:z.enum(["sq ft","sq m"]),price:z.coerce.number().positive().max(1_000_000_000_000),currency:z.enum(["PKR","USD","GBP"]),description:z.string().trim().min(20).max(4000)});
+const testimonialFields={name:z.string().trim().min(2).max(100),context:z.string().trim().max(120).optional().transform(v=>v||null),quote:z.string().trim().min(20).max(1200),rating:z.coerce.number().int().min(1).max(5).nullable().optional()};
+export const testimonialSchema=z.object({...testimonialFields,published:z.boolean().default(false),position:z.coerce.number().int().min(0).max(1000).default(0)});
+/** PATCH: every field optional and no defaults, so unspecified fields are never overwritten. */
+export const testimonialPatchSchema=z.object({...testimonialFields,published:z.boolean(),position:z.coerce.number().int().min(0).max(1000)}).partial();
+const optionalUrl=z.union([z.literal(""),z.url().startsWith("https://").max(300)]).optional();
+/** Images saved by local storage (see src/lib/cloudinary.ts) are served from /uploads/. */
+const localUploadPath=z.string().max(300).regex(/^\/uploads\/[A-Za-z0-9_/-]+\.(jpg|png|webp)$/);
+const optionalImageUrl=z.union([z.literal(""),z.url().startsWith("https://").max(300),localUploadPath]).optional();
+const text=(max:number)=>z.string().trim().max(max).optional();
+const imageHostUrl=z.union([z.literal(""),z.url().max(500).refine(u=>/^https:\/\/(images\.unsplash\.com|res\.cloudinary\.com)\//.test(u),"Use an image hosted on Cloudinary or Unsplash."),localUploadPath]).optional();
+/** All public site settings. Empty strings clear a value; nothing here may ever hold a secret. */
+export const siteSettingsSchema=z.object({siteName:text(80),logoUrl:optionalImageUrl,faviconUrl:optionalImageUrl,websiteUrl:optionalUrl,contactEmail:z.union([z.literal(""),z.email().max(254)]).optional(),contactPhone:text(40),officeAddress:text(300),officeHours:text(120),instagramUrl:optionalUrl,facebookUrl:optionalUrl,linkedinUrl:optionalUrl,heroHeading:text(120),heroDescription:text(300),heroImageUrl:imageHostUrl,featuredLimit:z.coerce.number().int().min(3).max(12).optional(),showFeatured:z.boolean().optional(),showLocations:z.boolean().optional(),showCategories:z.boolean().optional(),showLatest:z.boolean().optional(),showTestimonials:z.boolean().optional(),showAgents:z.boolean().optional(),seoTitle:text(70),seoDescription:text(170),seoKeywords:text(250),ogImageUrl:imageHostUrl}).partial();
+const coordinate=(min:number,max:number)=>z.preprocess(v=>v===""||v===undefined||v===null?undefined:Number(v),z.number().min(min).max(max).optional());
+export const locationSchema=z.object({country:z.string().trim().min(2).max(60).default("Pakistan"),province:z.string().trim().max(80).optional(),city:z.string().trim().min(2).max(100),area:z.string().trim().max(100).optional(),locality:z.string().trim().max(100).optional(),latitude:coordinate(-90,90),longitude:coordinate(-180,180)});
+const optionalText=(max:number)=>z.string().trim().max(max).optional();
+/** Admin edits to an account. Every field is optional so a single change can be sent on its own. */
+export const userUpdateSchema=z.object({name:z.string().trim().min(2).max(100).optional(),email:z.email().max(254).optional(),role:z.enum(["USER","OWNER","AGENT","ADMIN","SUPER_ADMIN"]).optional(),suspended:z.boolean().optional(),verified:z.boolean().optional(),phone:optionalText(30),bio:optionalText(3000),location:optionalText(120),experienceYears:z.coerce.number().int().min(0).max(70).nullable().optional(),specialization:optionalText(160)});
+export const agentProfileFields={name:z.string().trim().min(2).max(100),phone:z.string().trim().min(7).max(30),location:z.string().trim().min(2).max(120),bio:z.string().trim().max(3000).optional(),experienceYears:z.coerce.number().int().min(0).max(70).optional(),specialization:z.string().trim().max(160).optional()};
+export const createAgentSchema=z.object({...agentProfileFields,email:z.email().max(254),verified:z.boolean().default(false)});
+export const agentApplicationSchema=z.object({phone:agentProfileFields.phone,location:agentProfileFields.location,bio:z.string().trim().min(30).max(3000),experienceYears:z.coerce.number().int().min(0).max(70),specialization:z.string().trim().min(2).max(160)});
+export const categorySchema=z.object({name:z.string().trim().min(2).max(60),description:z.string().trim().max(300).optional(),position:z.coerce.number().int().min(0).max(1000).default(0)});
+export const locationRenameSchema=z.object({level:z.enum(["country","province","city","area","locality"]),from:z.string().trim().min(1).max(100),to:z.string().trim().min(2).max(100)});

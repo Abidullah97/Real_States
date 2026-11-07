@@ -1,0 +1,125 @@
+/*
+ * Estate House design tokens — luxury modern theme (deep navy + warm gold).
+ * Every colour, radius, shadow, spacing step and duration used by the UI is defined here.
+ * Breakpoints (used in media queries, which cannot read custom properties):
+ *   sm 640px · md 768px · lg 1024px · xl 1280px
+ *
+ * Contrast notes (WCAG): gold #C49A55 is decorative only on light surfaces (2.6:1);
+ * gold text on light uses --color-accent (#8A6930, 5.1:1). Gold on navy is 5.5:1.
+ */
+:root {
+  /* Channels for translucent overlays: rgb(var(--rgb-primary) / 0.5) */
+  --rgb-primary: 20 43 69;
+  --rgb-shade: 9 20 34;
+  --rgb-gold: 196 154 85;
+  --rgb-ivory: 248 249 251;
+
+  /* Brand colours */
+  --color-primary: #142b45;
+  --color-primary-hover: #1d3a5c;
+  --color-primary-soft: #23415f;
+  --color-gold: #c49a55;
+  --color-gold-hover: #b38846;
+  --color-gold-light: #e2c792;
+  --color-ivory: #f8f9fb;
+  --color-ivory-deep: #eef1f5;
+  --color-surface: #ffffff;
+
+  /* Accent: text-safe gold for links, eyebrows and icons on light surfaces */
+  --color-accent: #8a6930;
+  --color-accent-hover: #6f5424;
+  --color-accent-soft: #f5ecdc;
+  --color-accent-tint: #fbf7ef;
+
+  /* Text */
+  --color-text: #252b35;
+  --color-text-secondary: #5f6773;
+  --color-text-muted: #8a919c;
+  --color-text-inverse: #f8f9fb;
+  --color-text-inverse-muted: rgb(var(--rgb-ivory) / 0.74);
+
+  /* Lines */
+  --color-border: #e4e8ee;
+  --color-border-strong: #cfd5de;
+  --color-focus: #c49a55;
+  --focus-ring: 0 0 0 3px rgb(var(--rgb-gold) / 0.28);
+
+  /* Semantic */
+  --color-success: #23704a;
+  --color-success-bg: #e6f3ec;
+  --color-warning: #8a5a0b;
+  --color-warning-bg: #fbf1dc;
+  --color-error: #b3261e;
+  --color-error-bg: #fbeae8;
+  --color-info: #285a8c;
+  --color-info-bg: #e7eff8;
+  --color-favorite: #c0392b;
+
+  /* Data visualisation (validated: chroma, lightness and 3:1 contrast on white) */
+  --color-chart: #2563a8;
+
+  /* Typography */
+  --font-heading: var(--font-poppins), "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-inter), "Inter", ui-sans-serif, system-ui, sans-serif;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.5rem;
+  --text-2xl: clamp(1.625rem, 1.3rem + 1.2vw, 2.125rem);
+  --text-3xl: clamp(2rem, 1.5rem + 2vw, 2.75rem);
+  --text-display: clamp(2.5rem, 1.6rem + 3.8vw, 4.375rem);
+  --weight-heading: 600;
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.6;
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.03em;
+  --tracking-eyebrow: 0.16em;
+
+  /* Spacing scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --section-y: clamp(4rem, 2.5rem + 6vw, 7.5rem);
+
+  /* Layout */
+  --container: 1240px;
+  --container-narrow: 760px;
+  --gutter: clamp(1rem, 0.5rem + 2.4vw, 2.5rem);
+  --header-height: 72px;
+
+  /* Shape */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* Elevation (navy-tinted) */
+  --shadow-xs: 0 1px 2px rgb(var(--rgb-primary) / 0.06);
+  --shadow-sm: 0 1px 2px rgb(var(--rgb-primary) / 0.04), 0 4px 12px -4px rgb(var(--rgb-primary) / 0.1);
+  --shadow-md: 0 2px 4px rgb(var(--rgb-primary) / 0.04), 0 16px 32px -16px rgb(var(--rgb-primary) / 0.22);
+  --shadow-lg: 0 4px 8px rgb(var(--rgb-primary) / 0.05), 0 30px 60px -24px rgb(var(--rgb-primary) / 0.35);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --duration-fast: 140ms;
+  --duration: 220ms;
+  --duration-slow: 520ms;
+
+  /* Layers */
+  --z-header: 40;
+  --z-drawer: 60;
+  --z-toast: 80;
+}

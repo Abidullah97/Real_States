@@ -1,0 +1,2 @@
+import type {MetadataRoute} from "next";import {getProperties} from "@/lib/property-data";
+export default async function sitemap():Promise<MetadataRoute.Sitemap>{const base=process.env.NEXT_PUBLIC_SITE_URL||"http://localhost:3000";const fixed=["","/properties","/about","/agents","/contact","/sell"].map(path=>({url:`${base}${path}`,lastModified:new Date()}));const listings=(await getProperties()).map(p=>({url:`${base}/properties/${p.slug}`,lastModified:new Date()}));return [...fixed,...listings];}

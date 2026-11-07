@@ -1,0 +1,11 @@
+node_modules
+.next
+.test-build
+src/generated/prisma
+out
+.env*
+!.env.example
+*.tsbuildinfo
+
+# Locally stored uploaded images (used when Cloudinary is not configured)
+/uploads

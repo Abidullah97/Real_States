@@ -1,0 +1,42 @@
+{
+  "name": "estate-house",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "test": "tsc --module commonjs --target es2020 --outDir .test-build --esModuleInterop --skipLibCheck --moduleResolution node tests/validation.test.ts tests/storage-settings.test.ts src/lib/validation.ts src/lib/cloudinary.ts && node --test \".test-build/tests/*.test.js\"",
+    "typecheck": "prisma generate && tsc --noEmit",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "admin:promote": "tsx scripts/make-admin.ts"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^18.0.9",
+    "lucide-react": "^1.66.0",
+    "next": "^16.4.3",
+    "next-auth": "^5.0.0-beta.30",
+    "pg": "^8.23.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
+    "@types/node": "^22.19.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.4.3",
+    "prisma": "^7.10.1",
+    "tailwindcss": "^4.1.17",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

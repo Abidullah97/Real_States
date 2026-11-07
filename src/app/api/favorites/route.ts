@@ -1,0 +1,2 @@
+import {NextResponse} from "next/server";import {prisma} from "@/lib/prisma";import {currentPrincipal} from "@/lib/authorization";
+export async function GET(){try{const user=await currentPrincipal();if(!user)return NextResponse.json({error:"Sign in to see saved homes."},{status:401});const rows=await prisma.favorite.findMany({where:{userId:user.id},select:{property:{select:{slug:true}}}});return NextResponse.json({slugs:rows.map(x=>x.property.slug)});}catch{return NextResponse.json({error:"Could not load saved homes."},{status:503});}}

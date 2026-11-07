@@ -1,0 +1,11 @@
+import {NextResponse} from "next/server";
+import {hash} from "bcryptjs";
+import {prisma} from "@/lib/prisma";
+import {overLimit} from "@/lib/rate-limit";
+import {registrationSchema} from "@/lib/validation";
+import {issueToken} from "@/lib/tokens";
+import {sendTransactionalEmail} from "@/lib/email";
+import {notifyAdmins} from "@/lib/notifications";
+
+export async function POST(request:Request){try{const ip=request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";if(await overLimit(`register:${ip}`,4,60*60_000))return NextResponse.json({error:"Please wait before trying to create another account."},{status:429});const parsed=registrationSchema.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:"Use a valid email and a password with at least 12 characters, including upper case, lower case, and a number."},{status:400});const d=parsed.data;const email=d.email.toLowerCase();const passwordHash=await hash(d.password,12);await prisma.user.create({data:{name:d.name,email,passwordHash}});await notifyAdmins("registration",`New account: ${d.name}`,email,"/admin/users");const token=await issueToken(`verify:${email}`,24*60*60_000);const link=new URL(`/verify-email?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`,process.env.NEXT_PUBLIC_SITE_URL||new URL(request.url).origin);await sendTransactionalEmail({to:email,subject:"Verify your Estate House account",html:`<p>Hello ${escapeHtml(d.name)},</p><p>Confirm your email to activate your account:</p><p><a href="${link.toString()}">Verify email address</a></p><p>This link expires in 24 hours.</p>`});return NextResponse.json({message:"Account created. Check your email for the verification link."},{status:201});}catch(e){if(e&&typeof e==="object"&&"code"in e&&(e as {code:string}).code==="P2002")return NextResponse.json({error:"An account with this email already exists."},{status:409});return NextResponse.json({error:"Registration or verification email is temporarily unavailable. Check the email service configuration, then request another verification link."},{status:503});}}
+function escapeHtml(s:string){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));}

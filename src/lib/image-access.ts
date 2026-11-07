@@ -1,0 +1,3 @@
+import { isAdminRole } from "@/lib/roles";
+import {NextResponse} from "next/server";import {prisma} from "@/lib/prisma";
+export async function canManagePropertyImage(id:string,user:{id:string;role:string}){const property=await prisma.property.findUnique({where:{id},select:{id:true,ownerId:true,status:true}});if(!property)return NextResponse.json({error:"Property not found."},{status:404});if(!isAdminRole(user.role)&&property.ownerId!==user.id)return NextResponse.json({error:"You can only manage images for your own listings."},{status:403});if(property.status==="ARCHIVED")return NextResponse.json({error:"Restore this listing before changing its images."},{status:409});return null;}

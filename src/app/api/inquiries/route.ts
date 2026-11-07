@@ -1,0 +1,8 @@
+import {NextResponse} from "next/server";
+import {prisma} from "@/lib/prisma";
+import {auth} from "../../../../auth";
+import {overLimit} from "@/lib/rate-limit";
+import {inquirySchema} from "@/lib/validation";
+import {notifyAdmins} from "@/lib/notifications";
+
+export async function POST(request:Request){try{const ip=request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()||"unknown";if(await overLimit(`inquiry:${ip}`,5,60_000))return NextResponse.json({error:"Please wait a little before sending another message."},{status:429});const parsed=inquirySchema.safeParse(await request.json());if(!parsed.success)return NextResponse.json({error:"Please check your details and try again."},{status:400});const data=parsed.data;if(data.website)return NextResponse.json({message:"Thanks for your message. Our team will be in touch."});const property=data.propertySlug?await prisma.property.findUnique({where:{slug:data.propertySlug},select:{id:true,status:true}}):null;if(data.propertySlug&&!property)return NextResponse.json({error:"This property could not be found."},{status:404});const session=await auth();await prisma.inquiry.create({data:{name:data.name,email:data.email,phone:data.phone||null,message:data.message,propertyId:property?.status==="PUBLISHED"?property.id:null,userId:session?.user?.id||null}});await notifyAdmins("inquiry",`New inquiry from ${data.name}`,data.message.slice(0,140),"/admin/inquiries");return NextResponse.json({message:"Thanks for your message. Our team will be in touch."},{status:201});}catch{return NextResponse.json({error:"We couldn't send your message just now. Please try again later."},{status:503});}}
