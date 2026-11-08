@@ -123,10 +123,34 @@ npm test
 npm run build
 ```
 
-## Deployment outline
+## Deploying to Vercel
 
-Use a Node-compatible Next.js host and managed PostgreSQL. Configure production environment variables, generate Prisma Client, apply committed migrations, build, and run `npm start`. Set `NEXT_PUBLIC_SITE_URL` to the canonical HTTPS domain. Configure trusted proxy headers only for a proxy you control. Back up PostgreSQL and test a rollback strategy before applying production migrations.
+1. **Database.** Create a hosted PostgreSQL database (for example Neon, Supabase or Vercel Postgres). A `localhost` database on your computer cannot be reached from Vercel. Prefer the provider's pooled connection string for `DATABASE_URL`.
+2. **Migrations.** From your computer, point `DATABASE_URL` at the production database and run `npm run db:migrate` (`prisma migrate deploy` only applies pending migrations; it never resets data). Run it again whenever new migrations are added. If your provider's pooled URL rejects migrations, use its direct (non-pooled) URL for this step only.
+3. **First administrator.** Register on the deployed site, verify the email, then run `npm run admin:promote` locally against the production `DATABASE_URL` (see *Accounts and administrator access*).
+4. **Environment variables.** In Vercel → Project → Settings → Environment Variables, add the variables below, then redeploy.
+5. **Build settings.** Framework preset Next.js, root directory = repository root, build command `npm run build` (runs `prisma generate`), install command `npm install`. No `vercel.json` is required.
 
-Replace the draft legal copy and sample listings with business-approved content and licensed property images. Apply the remaining launch checklist in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md), including staging verification with real provider credentials.
-#   R e a l _ S t a t e s  
- 
+| Variable | Required | Purpose / where to get it | Environments |
+| --- | --- | --- | --- |
+| `DATABASE_URL` | Yes | PostgreSQL connection string from your database provider. | Production (use a separate database for Preview if you deploy previews) |
+| `AUTH_SECRET` | Yes | Signs and encrypts session cookies. Generate with `npx auth secret` or `openssl rand -base64 32`. Use a different value from development. | Production, Preview |
+| `NEXT_PUBLIC_SITE_URL` | Yes | Canonical HTTPS URL, e.g. `https://your-domain.com`. Used for links in emails, sitemap and SEO. | Production (Preview: the preview URL or leave unset) |
+| `EMAIL_FROM`, `EMAIL_API_KEY` | Yes in production | Resend verified sender and API key ([resend.com](https://resend.com)). Without them users cannot verify their email, and unverified users cannot sign in. | Production, Preview |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Yes for image uploads | Cloudinary dashboard. Vercel has no persistent disk, so local `uploads/` storage does not work there. | Production, Preview |
+| `AUTH_URL` | No | Only for a custom setup behind your own proxy. On Vercel the host is detected automatically. | — |
+| `AUTH_TRUST_HOST` | No | Only needed on non-Vercel hosts behind a trusted proxy (`true`). | — |
+| `NEXT_PUBLIC_MAP_API_KEY` | No | Google Maps Embed API key restricted to your domain. | Production, Preview |
+| `NEXT_PUBLIC_SOCIAL_*` | No | Public social profile URLs for footer icons. | Production |
+
+### Troubleshooting "There's a problem with the server configuration"
+
+This Auth.js page appears for any server-side sign-in failure. Open Vercel → Deployments → (latest) → Logs and look for lines starting with `[auth][error]` or `[db]`:
+
+- `MissingSecret` → `AUTH_SECRET` is not set for that environment.
+- `CallbackRouteError` with a Prisma cause, or `[db] DATABASE_URL ...` → the database is unreachable, the URL is wrong, or migrations have not been applied (`npm run db:migrate`).
+- `UntrustedHost` → only on non-Vercel hosts: set `AUTH_TRUST_HOST=true` or `AUTH_URL`.
+
+After changing environment variables, redeploy; Vercel does not apply them to existing deployments.
+
+Back up PostgreSQL before applying production migrations. Replace the draft legal copy with business-approved content and apply the remaining launch checklist in [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md).

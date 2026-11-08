@@ -28,6 +28,8 @@ export default function AuthForm({ mode, callbackUrl = "/dashboard" }: { mode: "
         setCreated(true);
       } else {
         const result = await signIn("credentials", { email: data.email, password: data.password, redirect: false, callbackUrl });
+        // "Configuration" means a server-side problem (missing AUTH_SECRET, database unreachable, ...), not bad credentials.
+        if (result?.error === "Configuration") throw new Error("Sign-in is temporarily unavailable because of a server problem. Please try again later.");
         if (result?.error) throw new Error("That email and password combination wasn’t recognised, or the email address hasn’t been verified yet.");
         setMessage({ tone: "success", text: "Signed in. Taking you to your account…" });
         router.push(callbackUrl);

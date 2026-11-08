@@ -7,7 +7,8 @@ import {overLimit} from "@/lib/rate-limit";
 import {logAction} from "@/lib/audit";
 import {isAdminRole} from "@/lib/roles";
 export const {handlers,auth,signIn,signOut}=NextAuth({
- trustHost:process.env.AUTH_TRUST_HOST==="true"||process.env.NODE_ENV!=="production",
+ // trustHost is deliberately left unset: Auth.js then trusts the host when AUTH_URL or AUTH_TRUST_HOST is set,
+ // on Vercel (VERCEL env var), or outside production. Setting it to false here broke every sign-in on Vercel (UntrustedHost).
  // Sessions expire after 8 hours; suspension takes effect immediately because every request re-checks the account.
  session:{strategy:"jwt",maxAge:8*60*60},
  pages:{signIn:"/signin"},
