@@ -137,11 +137,20 @@ npm run build
 | `AUTH_SECRET` | Yes | Signs and encrypts session cookies. Generate with `npx auth secret` or `openssl rand -base64 32`. Use a different value from development. | Production, Preview |
 | `NEXT_PUBLIC_SITE_URL` | Yes | Canonical HTTPS URL, e.g. `https://your-domain.com`. Used for links in emails, sitemap and SEO. | Production (Preview: the preview URL or leave unset) |
 | `EMAIL_FROM`, `EMAIL_API_KEY` | Yes in production | Resend verified sender and API key ([resend.com](https://resend.com)). Without them users cannot verify their email, and unverified users cannot sign in. | Production, Preview |
-| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | Yes for image uploads | Cloudinary dashboard. Vercel has no persistent disk, so local `uploads/` storage does not work there. | Production, Preview |
+| `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` | One image store is required on Vercel | Cloudinary dashboard. Vercel has no persistent disk, so local `uploads/` storage does not work there. | Production, Preview |
+| `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SECRET_KEY` | Alternative to Cloudinary | Supabase → Project Settings → API Keys: project URL and a **secret** key (`sb_secret_...`, or the legacy `service_role` key). Server-only; never prefix the secret with `NEXT_PUBLIC_`. Used only when Cloudinary is not configured. | Production, Preview |
+| `SUPABASE_STORAGE_BUCKET` | No | Storage bucket name, default `property-images` (created by the migrations). | Production, Preview |
 | `AUTH_URL` | No | Only for a custom setup behind your own proxy. On Vercel the host is detected automatically. | — |
 | `AUTH_TRUST_HOST` | No | Only needed on non-Vercel hosts behind a trusted proxy (`true`). | — |
 | `NEXT_PUBLIC_MAP_API_KEY` | No | Google Maps Embed API key restricted to your domain. | Production, Preview |
 | `NEXT_PUBLIC_SOCIAL_*` | No | Public social profile URLs for footer icons. | Production |
+
+### Supabase notes
+
+- The app reaches Supabase PostgreSQL only through Prisma on the server. The `20261111000000_supabase_rls_storage` migration enables row level security on every table with no policies, so Supabase's public Data API (REST/GraphQL with the publishable key) can neither read nor write any table. Prisma connects as the table owner and is not affected. If a later migration adds a table, enable RLS on it too.
+- The same migration creates the public `property-images` Storage bucket (JPEG/PNG/WebP, 10 MB). Anyone can view images; only the server, using the secret key, can upload or delete.
+- Supabase Auth and the Supabase JavaScript client are not used; accounts are handled by Auth.js and stored in the `User` table.
+- Use the pooler hosts (`aws-0-<region>.pooler.supabase.com`): port `6543` for `DATABASE_URL` on Vercel, port `5432` for `npm run db:migrate`. Append `?sslmode=require&connect_timeout=30`; Prisma's default 5-second connect timeout is too short for distant regions and fails with a misleading `P1001`.
 
 ### Troubleshooting "There's a problem with the server configuration"
 

@@ -9,7 +9,7 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com",
+  "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.supabase.co",
   "font-src 'self' data:",
   `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
   "frame-src https://www.google.com https://maps.google.com",
@@ -21,7 +21,7 @@ const csp = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  images: { remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" },{protocol:"https",hostname:"res.cloudinary.com"}] },
+  images: { remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com" },{protocol:"https",hostname:"res.cloudinary.com"},{protocol:"https",hostname:"*.supabase.co",pathname:"/storage/v1/object/public/**"}] },
   async headers() { return [{ source: "/(.*)", headers: [
     { key: "X-Content-Type-Options", value: "nosniff" },
     { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
