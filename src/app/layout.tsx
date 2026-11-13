@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Poppins } from "next/font/google";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getSiteSettings } from "@/lib/site-content";
 import "./globals.css";
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           Skip to content
         </a>
         {children}
+        <SpeedInsights />
       </body>
     </html>
   );
