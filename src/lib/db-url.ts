@@ -50,11 +50,17 @@ export function describeDatabaseUrl(raw: string | undefined) {
     return {summary: `unparseable value (length ${value.length}, starts with "${value.slice(0, 13)}")`, problems: [...problems, "not a valid URL; a password with @ # / ? % or spaces breaks it"]};
   }
   const user = decodeURIComponent(url.username), database = decodeURIComponent(url.pathname.replace(/^\//, ""));
-  const params = [...url.searchParams.keys()].join(",") || "none";
+  // Only echo values that cannot contain secrets: a malformed database name may hold a second pasted URL
+  // (including its password), so it is described, never printed.
+  const safeName = /^[A-Za-z0-9_-]{1,63}$/;
+  const databaseLabel = safeName.test(database) ? database : `<invalid, ${database.length} characters>`;
+  const userLabel = /^[A-Za-z0-9_.-]{1,80}$/.test(user) ? user : `<invalid, ${user.length} characters>`;
+  const params = [...url.searchParams.keys()].filter((k) => /^[a-z_]{1,30}$/i.test(k)).join(",") || "none";
+  if ((value.match(/postgres(ql)?:\/\//g) || []).length > 1) problems.push("the value contains the connection URL more than once; it was pasted twice. Delete it and paste it exactly once");
   if (!/^postgres(ql)?:$/.test(url.protocol)) problems.push(`scheme is "${url.protocol}" instead of "postgresql:"`);
   if (!url.password) problems.push("no password in the URL");
   if (/\[|\]|YOUR[-_]?PASSWORD/i.test(decodeURIComponent(url.password))) problems.push("password is still the [YOUR-PASSWORD] placeholder");
-  if (url.hostname.endsWith("pooler.supabase.com") && !/^postgres\.[a-z0-9]+$/.test(user)) problems.push(`Supabase pooler user must be "postgres.<project-ref>", got "${user}"`);
-  if (!/^[A-Za-z0-9_-]+$/.test(database)) problems.push(`database name should be "postgres", got "${database}"`);
-  return {summary: `user=${user} host=${url.hostname} port=${url.port || "5432"} database=${database} params=${params}`, problems};
+  if (url.hostname.endsWith("pooler.supabase.com") && !/^postgres\.[a-z0-9]+$/.test(user)) problems.push(`Supabase pooler user must be "postgres.<project-ref>", got ${userLabel}`);
+  if (!safeName.test(database)) problems.push(`database name should be "postgres", got ${databaseLabel}`);
+  return {summary: `user=${userLabel} host=${url.hostname} port=${url.port || "5432"} database=${databaseLabel} params=${params}`, problems};
 }
