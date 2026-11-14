@@ -4,6 +4,7 @@ import { useRef, useState, type FormEvent } from "react";
 import { useConfirm, usePrompt } from "@/components/ui/confirm-dialog";
 import { Field, FormAlert, SubmitButton, submitJson, type FormMessage } from "@/components/ui/form";
 import { Icon } from "@/components/ui/icon";
+import { shrinkImage } from "@/lib/shrink-image";
 import SlideOver from "@/components/ui/slide-over";
 import { useToast } from "@/components/ui/toast";
 
@@ -171,10 +172,10 @@ export function AgentProfileActions({ agent, assignable }: { agent: AgentProfile
     if (await call(`/api/admin/agents/${agent.profileId}`, "PATCH", { action: "assign", propertyIds: ids })) setPanel(null);
   }
 
-  function upload(file?: File) {
+  async function upload(file?: File) {
     if (!file) return;
     const data = new FormData();
-    data.set("file", file);
+    data.set("file", await shrinkImage(file, { maxDimension: 1200 }));
     call(`/api/admin/users/${agent.userId}/avatar`, "POST", data);
     if (fileRef.current) fileRef.current.value = "";
   }

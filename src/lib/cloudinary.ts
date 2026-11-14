@@ -56,8 +56,20 @@ export async function uploadCloudinaryImage(file:File,folder:string){
   const dir=folder.split("/").map(s=>s.replace(/[^a-zA-Z0-9_-]/g,"")).filter(Boolean).join("/")||"images";
   const objectPath=`${dir}/${randomUUID()}.${EXT[mime]}`;
   const response=await fetch(`${supabase.url}/storage/v1/object/${supabase.bucket}/${objectPath}`,{method:"POST",headers:supabaseHeaders(supabase.key,{"content-type":mime,"cache-control":"max-age=31536000","x-upsert":"false"}),body:bytes});
-  if(!response.ok)throw new Error("Image storage rejected the upload.");
+  if(!response.ok){
+   // Supabase's reason (e.g. "Bucket not found", "Invalid Compact JWS", "mime type not supported") goes to the server log only.
+   const detail=(await response.text().catch(()=>"")).replace(/sb_secret_[A-Za-z0-9_-]+|eyJ[A-Za-z0-9_.-]+/g,"***").slice(0,300);
+   console.error(`[storage] Supabase upload failed: HTTP ${response.status} ${detail}`);
+   if(response.status===401||response.status===403)throw new Error("Image storage rejected the upload: check SUPABASE_SECRET_KEY (use the secret or service_role key, not the publishable/anon key).");
+   if(response.status===404||/bucket not found/i.test(detail))throw new Error(`Image storage bucket "${supabase.bucket}" was not found. Run the database migrations or create it in Supabase Storage.`);
+   throw new Error("Image storage rejected the upload.");
+  }
   return{url:`${supabase.url}/storage/v1/object/public/${supabase.bucket}/${objectPath}`,publicId:`${SUPABASE_PREFIX}${objectPath}`};
+ }
+ if(!config&&process.env.VERCEL){
+  // Vercel has no persistent, writable disk, so the local fallback cannot work there.
+  console.error("[storage] No image storage configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY (or CLOUDINARY_*) in Vercel.");
+  throw new Error("Image uploads are not configured on this server yet. Add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SECRET_KEY in Vercel, then redeploy.");
  }
  if(!config){
   // Local storage: keep only safe folder segments, then write <uuid>.<ext>.

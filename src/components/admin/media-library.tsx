@@ -7,6 +7,7 @@ import { useConfirm } from "@/components/ui/confirm-dialog";
 import EmptyState from "@/components/ui/empty-state";
 import { FormAlert, SubmitButton, type FormMessage } from "@/components/ui/form";
 import { Icon } from "@/components/ui/icon";
+import { shrinkImage } from "@/lib/shrink-image";
 import StatusBadge from "@/components/ui/status-badge";
 import { useToast } from "@/components/ui/toast";
 
@@ -73,7 +74,7 @@ export default function MediaLibrary({ items, properties }: { items: MediaItem[]
     try {
       for (const file of files) {
         const body = new FormData();
-        body.set("file", file);
+        body.set("file", await shrinkImage(file));
         body.set("alt", String(data.get("alt") || file.name.replace(/\.[^.]+$/, "")).slice(0, 100));
         const r = await fetch(`/api/properties/${propertyId}/images`, { method: "POST", body });
         const j = await r.json();

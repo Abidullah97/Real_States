@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Field, FormAlert, SubmitButton, type FormMessage } from "@/components/ui/form";
 import { Icon } from "@/components/ui/icon";
+import { shrinkImage } from "@/lib/shrink-image";
 
 type Picture = { id: string; url: string; alt: string; position: number };
 const MAX_IMAGES = 20;
@@ -30,7 +31,7 @@ export default function PropertyImageManager({ propertyId, images }: { propertyI
     try {
       for (const file of files) {
         const data = new FormData();
-        data.set("file", file);
+        data.set("file", await shrinkImage(file));
         data.set("alt", `${alt || "Property photo"} — ${file.name.replace(/\.[^.]+$/, "").slice(0, 80)}`);
         const r = await fetch(`/api/properties/${propertyId}/images`, { method: "POST", body: data });
         const j = await r.json();

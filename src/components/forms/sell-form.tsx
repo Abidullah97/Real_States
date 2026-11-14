@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { Field, FormAlert, SubmitButton, type FormMessage } from "@/components/ui/form";
 import { Icon } from "@/components/ui/icon";
+import { shrinkImage } from "@/lib/shrink-image";
 
 const MAX_PHOTOS = 5;
 const MAX_BYTES = 10 * 1024 * 1024;
@@ -38,7 +39,13 @@ export default function SellForm({ categories }: { categories: string[] }) {
     setMessage(null);
     const form = e.currentTarget;
     try {
-      const response = await fetch("/api/submissions", { method: "POST", body: new FormData(form) });
+      const body = new FormData(form);
+      const photos = body.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+      body.delete("images");
+      // Keep the whole request well under Vercel's 4.5 MB body limit.
+      const perPhoto = Math.min(1.5 * 1024 * 1024, Math.floor((3.6 * 1024 * 1024) / Math.max(1, photos.length)));
+      for (const photo of photos) body.append("images", await shrinkImage(photo, { maxBytes: perPhoto, maxDimension: 2000 }));
+      const response = await fetch("/api/submissions", { method: "POST", body });
       const json = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(json.error || "Could not submit your listing.");
       setMessage({ tone: "success", text: json.message });

@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Field, FormAlert, SubmitButton, submitJson, type FormMessage } from "@/components/ui/form";
 import { Icon } from "@/components/ui/icon";
+import { shrinkImage } from "@/lib/shrink-image";
 import type { SiteSettingsData } from "@/lib/site-content";
 
 const TABS = [
@@ -31,7 +32,7 @@ function ImageField({ name, label, kind, value, hint, onChange }: { name: string
     setStatus({ tone: "info", text: "Uploading…" });
     const body = new FormData();
     body.set("kind", kind);
-    body.set("file", file);
+    body.set("file", await shrinkImage(file));
     try {
       const r = await fetch("/api/admin/settings/upload", { method: "POST", body });
       const j = await r.json();
