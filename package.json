@@ -11,6 +11,7 @@
     "typecheck": "prisma generate && tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
+    "db:check": "tsx scripts/check-db.ts",
     "db:seed": "tsx prisma/seed.ts",
     "admin:promote": "tsx scripts/make-admin.ts"
   },
