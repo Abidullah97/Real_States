@@ -1,7 +1,7 @@
 import {z} from "zod";
 
 export const registrationSchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),password:z.string().min(12).max(128).regex(/[a-z]/).regex(/[A-Z]/).regex(/[0-9]/)});
-export const inquirySchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),phone:z.string().trim().max(30).optional(),message:z.string().trim().min(10).max(2000),propertySlug:z.string().max(100).optional(),website:z.string().optional()});
+export const inquirySchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),phone:z.string().trim().max(30).optional(),message:z.string().trim().min(10).max(2000),propertySlug:z.string().max(200).optional(),website:z.string().optional()});
 export const submissionSchema=z.object({name:z.string().trim().min(2).max(100),email:z.email().max(254),phone:z.string().trim().min(7).max(30),city:z.string().trim().min(2).max(100),address:z.string().trim().min(4).max(300),propertyType:z.string().trim().min(2).max(60),listingType:z.enum(["SALE","RENT"]),bedrooms:z.coerce.number().int().min(0).max(30),area:z.coerce.number().positive().max(1_000_000),areaUnit:z.enum(["sq ft","sq m"]),price:z.coerce.number().positive().max(1_000_000_000_000),currency:z.enum(["PKR","USD","GBP"]),description:z.string().trim().min(20).max(4000)});
 const testimonialFields={name:z.string().trim().min(2).max(100),context:z.string().trim().max(120).optional().transform(v=>v||null),quote:z.string().trim().min(20).max(1200),rating:z.coerce.number().int().min(1).max(5).nullable().optional()};
 export const testimonialSchema=z.object({...testimonialFields,published:z.boolean().default(false),position:z.coerce.number().int().min(0).max(1000).default(0)});

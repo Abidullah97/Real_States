@@ -12,6 +12,8 @@ test("registration enforces strong passwords and normalizes the name",()=>{
 test("inquiries reject too-short messages and accept a valid property inquiry",()=>{
  assert.equal(inquirySchema.safeParse({name:"Ada",email:"ada@example.com",message:"hello"}).success,false);
  assert.equal(inquirySchema.safeParse({name:"Ada",email:"ada@example.com",message:"I would like to arrange a viewing.",propertySlug:"garden-house"}).success,true);
+ // Listings approved from submissions with long addresses have slugs of up to 107 characters.
+ assert.equal(inquirySchema.safeParse({name:"Abid ullah",email:"ada@example.com",phone:"+923430878727",message:"I'd like to know more about this property and arrange a viewing.",propertySlug:`${"a".repeat(100)}-1a2b3c`}).success,true);
 });
 
 test("seller submissions coerce numeric form values and enforce required details",()=>{
