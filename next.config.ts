@@ -5,13 +5,17 @@ const isDev = process.env.NODE_ENV !== "production";
 // Content-Security-Policy: limits where scripts, images and frames may load from, as a second line of
 // defence against XSS. Inline scripts/styles are needed by Next.js hydration; 'unsafe-eval' only in dev
 // (React Refresh). Images: own origin (incl. /uploads), Unsplash and Cloudinary. Frames: Google Maps embeds.
+// Google Analytics 4: gtag.js loads from googletagmanager.com and sends hits to google-analytics.com hosts.
+const gaScriptHosts = "https://*.googletagmanager.com";
+const gaConnectHosts = "https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com";
+const gaImgHosts = "https://*.google-analytics.com https://*.googletagmanager.com";
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} ${gaScriptHosts}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.supabase.co",
+  `img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.supabase.co ${gaImgHosts}`,
   "font-src 'self' data:",
-  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  `connect-src 'self'${isDev ? " ws: wss:" : ""} ${gaConnectHosts}`,
   "frame-src https://www.google.com https://maps.google.com",
   "object-src 'none'",
   "base-uri 'self'",
